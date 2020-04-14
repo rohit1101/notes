@@ -79,16 +79,17 @@ function deletion(e) {
 function handleEdit(e) {
   const editId = parseInt(e.currentTarget.parentElement.dataset.id);
   const inEl = document.createElement('input');
+
   inEl.classList.add('edit');
+  // inEl.value = notes_arr.find(item => (item.id === editId))['note']
+  inEl.value = notes_arr.find(item => {
+    return item.id === editId;
+  }).note;
 
-  // inEl.value = notes_arr.find(item => {
-  //   return item.id === editId;
-  // }).note;
-
-  const p = noteEl.querySelector('.note');
+  const p = noteEl.querySelector(`.note[data-id="${editId}"]`);
   p.replaceWith(inEl);
-
-  inEl.addEventListener('change', e => {
+  inEl.focus();
+  inEl.addEventListener('blur', e => {
     notes_arr.map(item => {
       if (editId === item.id) {
         item.note = inEl.value;
