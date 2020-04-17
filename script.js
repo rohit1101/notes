@@ -1,19 +1,33 @@
 const noteEl = document.querySelector('.notes');
 const textEl = document.querySelector('.textfield');
 const btn = document.querySelector('.btn');
+const filt = document.querySelector('.filter');
+// Local array
+let valData = [];
+// Array for getting the unique id from Firebase
+let refData = [];
 
-let notes_arr = JSON.parse(localStorage.getItem('Notes')) || [];
-render();
+let firebaseConfig = {
+  apiKey: 'AIzaSyDi8HS6rKIl_IzrEw6KTuLduukoQD9sZW4',
+  authDomain: 'final-d45d7.firebaseapp.com',
+  databaseURL: 'https://final-d45d7.firebaseio.com',
+  projectId: 'final-d45d7',
+  storageBucket: 'final-d45d7.appspot.com',
+  messagingSenderId: '103164435210',
+  appId: '1:103164435210:web:ba9e2ab5e783bc2dc478f3'
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
-console.log(notes_arr);
+let db = firebase.database();
+// Setting the ref as notes
+let ref = db.ref('notes');
+// Getting the value from the DB and call the callback function -> getData
+ref.on('value', getData);
 
-function saveAndRender() {
-  localStorage.setItem('Notes', JSON.stringify(notes_arr));
-}
-
-function render() {
+function render(f) {
   noteEl.innerHTML = '';
-  notes_arr.forEach(item => {
+  valData.forEach(item => {
     const pEl = document.createElement('p');
     pEl.classList.add('note');
     // pEl.setAttribute('contenteditable', 'true');
@@ -30,32 +44,31 @@ function render() {
   textEl.value = '';
 }
 
-// Create
+function getData(data) {
+  refData = Object.entries(data.val());
+  valData = Object.values(data.val());
+  // Getting data from firebase and rendering it in the DOM
+  render();
+}
 
+// Creating data in Firebase
+function saveAndRender(userInp) {
+  ref.push({
+    id: new Date().getTime(),
+    note: userInp
+  });
+}
+
+//Read
 function handleClick(e) {
   e.preventDefault();
   if (textEl.value === '' || textEl.value === ' ') {
     return;
   }
   const userInp = textEl.value.trim();
-  notes_arr.push({
-    id: new Date().getTime(),
-    note: userInp
-  });
-  saveAndRender();
-  const pEl = document.createElement('p');
-  pEl.classList.add('note');
-  // pEl.setAttribute('contenteditable', 'true');
-  pEl.setAttribute('data-id', `${new Date().getTime()}`);
-  pEl.innerHTML = `${userInp} <i class="fas fa-edit"></i> <i class="fas fa-trash-alt"></i>`;
-  noteEl.appendChild(pEl);
+  saveAndRender(userInp);
+  render();
   textEl.value = '';
-
-  const delEl = pEl.querySelector('.fa-trash-alt');
-  delEl.addEventListener('click', deletion);
-
-  const editEl = pEl.querySelector('.fa-edit');
-  editEl.addEventListener('click', handleEdit);
 }
 
 btn.addEventListener('click', handleClick);
@@ -65,12 +78,20 @@ function deletion(e) {
   e.preventDefault();
   const currentEl = e.currentTarget.parentElement;
   const delId = parseInt(e.currentTarget.parentElement.dataset.id);
-  let d = notes_arr.findIndex(item => {
+
+  const valIndex = valData.findIndex(item => {
     return item.id === delId;
   });
-  notes_arr.splice(d, 1);
-  saveAndRender();
 
+  const fireRef = refData.find(item => {
+    return item[1].id === delId;
+  });
+
+  // console.log(fireRef[0]);
+  const delFire = db.ref('notes/' + fireRef[0]);
+  valData.splice(valIndex, 1);
+  delFire.remove();
+  render();
   currentEl.remove();
 }
 
@@ -82,20 +103,61 @@ function handleEdit(e) {
 
   inEl.classList.add('edit');
   // inEl.value = notes_arr.find(item => (item.id === editId))['note']
-  inEl.value = notes_arr.find(item => {
+  inEl.value = valData.find(item => {
     return item.id === editId;
   }).note;
 
   const p = noteEl.querySelector(`.note[data-id="${editId}"]`);
   p.replaceWith(inEl);
   inEl.focus();
+
   inEl.addEventListener('blur', e => {
-    notes_arr.map(item => {
+    valData.map(item => {
       if (editId === item.id) {
         item.note = inEl.value;
       }
-      saveAndRender();
-      render();
+      return item;
     });
+    // Getting the Database ID
+    const fireRef = refData.find(item => {
+      return item[1].id === editId;
+    });
+
+    // Updating the value in the DB
+    let newEditValue = inEl.value;
+    console.log(newEditValue);
+
+    db.ref('notes/' + fireRef[0]).set({
+      id: new Date().getTime(),
+      note: newEditValue
+    });
+  });
+}
+
+// filter feature
+filt.addEventListener('input', e => {
+  // Whenever the input event is cleared...
+  noteEl.innerHTML = '';
+  const filArr = valData.filter(item => {
+    return item.note
+      .toLowerCase()
+      .includes(e.currentTarget.value.toLowerCase());
+  });
+  fRender(filArr);
+});
+
+function fRender(f) {
+  f.forEach(item => {
+    const pEl = document.createElement('p');
+    pEl.classList.add('note');
+    // pEl.setAttribute('contenteditable', 'true');
+    pEl.setAttribute('data-id', `${item.id}`);
+    pEl.innerHTML = `${item.note} <i class="fas fa-edit"></i> <i class="fas fa-trash-alt"></i>`;
+    noteEl.appendChild(pEl);
+    const delEl = pEl.querySelector('.fa-trash-alt');
+    delEl.addEventListener('click', deletion);
+
+    const editEl = pEl.querySelector('.fa-edit');
+    editEl.addEventListener('click', handleEdit);
   });
 }
