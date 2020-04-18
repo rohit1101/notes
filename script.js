@@ -141,3 +141,13 @@ function render(items) {
     editEl.addEventListener('click', handleEdit);
   });
 }
+
+/* 
+
+Origin (Github):
+-> master: v2->a->b->d->e
+
+Local (your computer):
+-> master: v2->a->b->d
+
+*/
