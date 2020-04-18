@@ -1,4 +1,4 @@
-// HI bro....
+
 
 const noteEl = document.querySelector('.notes');
 const textEl = document.querySelector('.textfield');
