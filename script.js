@@ -1,3 +1,5 @@
+// HI bro....
+
 const noteEl = document.querySelector('.notes');
 const textEl = document.querySelector('.textfield');
 const btn = document.querySelector('.btn');
@@ -25,30 +27,11 @@ let ref = db.ref('notes');
 // Getting the value from the DB and call the callback function -> getData
 ref.on('value', getData);
 
-function render(f) {
-  noteEl.innerHTML = '';
-  valData.forEach(item => {
-    const pEl = document.createElement('p');
-    pEl.classList.add('note');
-    // pEl.setAttribute('contenteditable', 'true');
-    pEl.setAttribute('data-id', `${item.id}`);
-    pEl.innerHTML = `${item.note} <i class="fas fa-edit"></i> <i class="fas fa-trash-alt"></i>`;
-    noteEl.appendChild(pEl);
-    const delEl = pEl.querySelector('.fa-trash-alt');
-    delEl.addEventListener('click', deletion);
-
-    const editEl = pEl.querySelector('.fa-edit');
-    editEl.addEventListener('click', handleEdit);
-  });
-
-  textEl.value = '';
-}
-
 function getData(data) {
   refData = Object.entries(data.val());
   valData = Object.values(data.val());
   // Getting data from firebase and rendering it in the DOM
-  render();
+  render(valData);
 }
 
 // Creating data in Firebase
@@ -67,7 +50,6 @@ function handleClick(e) {
   }
   const userInp = textEl.value.trim();
   saveAndRender(userInp);
-  render();
   textEl.value = '';
 }
 
@@ -137,17 +119,17 @@ function handleEdit(e) {
 // filter feature
 filt.addEventListener('input', e => {
   // Whenever the input event is cleared...
-  noteEl.innerHTML = '';
   const filArr = valData.filter(item => {
     return item.note
       .toLowerCase()
       .includes(e.currentTarget.value.toLowerCase());
   });
-  fRender(filArr);
+  render(filArr);
 });
 
-function fRender(f) {
-  f.forEach(item => {
+function render(items) {
+  noteEl.innerHTML = '';
+  items.forEach(item => {
     const pEl = document.createElement('p');
     pEl.classList.add('note');
     // pEl.setAttribute('contenteditable', 'true');
