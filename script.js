@@ -73,7 +73,6 @@ function deletion(e) {
   const delFire = db.ref('notes/' + fireRef[0]);
   valData.splice(valIndex, 1);
   delFire.remove();
-  render();
   currentEl.remove();
 }
 
@@ -109,8 +108,7 @@ function handleEdit(e) {
     let newEditValue = inEl.value;
     console.log(newEditValue);
 
-    db.ref('notes/' + fireRef[0]).set({
-      id: new Date().getTime(),
+    db.ref('notes/' + fireRef[0]).update({
       note: newEditValue
     });
   });
