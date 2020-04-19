@@ -18,7 +18,6 @@ let firebaseConfig = {
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-
 let db = firebase.database();
 // Setting the ref as notes
 let ref = db.ref('notes');
@@ -29,7 +28,6 @@ function getData(data) {
   refData = Object.entries(data.val());
   valData = Object.values(data.val());
   // // Getting data from firebase and rendering it in the DOM
-  render(valData);
 }
 
 // Creating data in Firebase
@@ -38,6 +36,7 @@ function saveAndRender(userInp) {
     createdAt: new Date().getTime(),
     note: userInp
   });
+  render(valData);
 }
 
 //Read
@@ -57,17 +56,18 @@ btn.addEventListener('click', handleClick);
 function deletion(e) {
   e.preventDefault();
   const currentEl = e.currentTarget.parentElement;
-  const delId = parseInt(e.currentTarget.parentElement.dataset.id);
+  const delId = parseInt(e.currentTarget.parentElement.dataset.createdAt);
+  console.log(delId);
 
   const valIndex = valData.findIndex(item => {
-    return item.id === delId;
+    return item.createdAt === delId;
   });
 
   const fireRef = refData.find(item => {
-    return item[1].id === delId;
+    return item[1].createdAt === delId;
   });
 
-  // console.log(fireRef[0]);
+  console.log(fireRef[0]);
   const delFire = db.ref('notes/' + fireRef[0]);
   valData.splice(valIndex, 1);
   delFire.remove();
@@ -77,29 +77,29 @@ function deletion(e) {
 // Update
 
 function handleEdit(e) {
-  const editId = parseInt(e.currentTarget.parentElement.dataset.id);
+  const editId = parseInt(e.currentTarget.parentElement.dataset.createdAt);
   const inEl = document.createElement('input');
 
   inEl.classList.add('edit');
   // inEl.value = notes_arr.find(item => (item.id === editId))['note']
   inEl.value = valData.find(item => {
-    return item.id === editId;
+    return item.createdAt === editId;
   }).note;
 
-  const p = noteEl.querySelector(`.note[data-id="${editId}"]`);
+  const p = noteEl.querySelector(`.note[data-createdAt="${editId}"]`);
   p.replaceWith(inEl);
   inEl.focus();
 
   inEl.addEventListener('blur', e => {
     valData.map(item => {
-      if (editId === item.id) {
+      if (editId === item.createdAt) {
         item.note = inEl.value;
       }
       return item;
     });
     // Getting the Database ID
     const fireRef = refData.find(item => {
-      return item[1].id === editId;
+      return item[1].createdAt === editId;
     });
 
     // Updating the value in the DB
@@ -129,7 +129,7 @@ function render(items) {
     const pEl = document.createElement('p');
     pEl.classList.add('note');
     // pEl.setAttribute('contenteditable', 'true');
-    pEl.setAttribute('data-id', `${item.id}`);
+    // pEl.setAttribute('data-createdAt', `${item.createdAt}`);
     pEl.innerHTML = `${item.note} <i class="fas fa-edit"></i> <i class="fas fa-trash-alt"></i>`;
     noteEl.appendChild(pEl);
     const delEl = pEl.querySelector('.fa-trash-alt');
@@ -139,3 +139,51 @@ function render(items) {
     editEl.addEventListener('click', handleEdit);
   });
 }
+// /*
+// Source
+//   {
+//     key-1: {createdAt, note},
+//     key-2: {createdAt, note},
+//   }
+
+//   From firebase
+//   {
+//     "abc": {id: 121343,
+//             note: "hi"},
+//     "def": {id: 234343,
+//             note: "bye"},
+//   }
+
+//   Transform to:
+//   [{key: "abc", note: "hi", id: 12345},
+//   {key: "def", note: "bye", id: 23433}]
+
+// Destination:
+// 1.  [{note, key-1, createdAt}
+//     {note, key-2, createdAt}]
+
+//     refData=[]
+//     {
+//       refData: []
+//     }
+
+//     {
+//       refDAta: transform(obj)
+//     }
+// 2. arr=[['key-1',{id,note}],['key-2',{id,note}],['key-3',{id,note}]]
+//     arr.forEach
+//       obj = {
+//         key: item[0],
+//         note:item[1].note,
+//         id:item[1].id
+//       }
+//       global_arr.push(obj)
+
+//     function transformFirebaseData(firebaseData) -> 1
+//       return firebase.map
+//         obj = {
+//         key: item[0],
+//         note:item[1].note,
+//         id:item[1].id
+//       }
+// */
