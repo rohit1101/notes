@@ -26,15 +26,20 @@ h1 {
 }
 
 .notes {
-  width: 20%;
+  width: 90%;
   margin: 2rem 0;
 }
 
 .notes .note {
+  width: 100%;
+  height: 10rem;
   font-size: 1.8rem;
   display: flex;
   justify-content: space-between;
   margin: 1rem 0;
+  /* padding: 2rem 2rem; */
+  margin: 1rem 0;
+  border: 2px solid goldenrod;
 }
 
 .notes .note i {
