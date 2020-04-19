@@ -1,5 +1,3 @@
-
-
 const noteEl = document.querySelector('.notes');
 const textEl = document.querySelector('.textfield');
 const btn = document.querySelector('.btn');
@@ -30,14 +28,14 @@ ref.on('value', getData);
 function getData(data) {
   refData = Object.entries(data.val());
   valData = Object.values(data.val());
-  // Getting data from firebase and rendering it in the DOM
+  // // Getting data from firebase and rendering it in the DOM
   render(valData);
 }
 
 // Creating data in Firebase
 function saveAndRender(userInp) {
   ref.push({
-    id: new Date().getTime(),
+    createdAt: new Date().getTime(),
     note: userInp
   });
 }
@@ -141,13 +139,3 @@ function render(items) {
     editEl.addEventListener('click', handleEdit);
   });
 }
-
-/* 
-
-Origin (Github):
--> master: v2->a->b->d->e
-
-Local (your computer):
--> master: v2->a->b->d
-
-*/
